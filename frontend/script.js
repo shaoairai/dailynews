@@ -268,16 +268,9 @@ function createArticleCard(article, index) {
                     ${contentLength > 0 ? `<span class="tag tag-length">📄 ${contentLength} 字</span>` : ''}
                 </div>
             </div>
-            <div class="article-summary">
-                <h4>📝 摘要</h4>
-                <p>${escapeHtml(article.summary || '無摘要內容')}</p>
-            </div>
             <div class="article-content ${contentClass}">
-                <div class="content-header" onclick="toggleContent('${contentId}')">
-                    <h4>${hasContent ? '📖 完整內容（點擊展開）' : '⚠️ 無法取得全文'}</h4>
-                    <span class="toggle-icon" id="icon-${contentId}">▼</span>
-                </div>
-                <div class="content-body" id="${contentId}" style="display: none;">
+                <h4>${hasContent ? '📖 文章內容' : '⚠️ 無法取得全文'}</h4>
+                <div class="content-body">
                     <p>${escapeHtml(fullContent) || '無內容'}</p>
                 </div>
             </div>

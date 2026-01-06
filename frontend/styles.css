@@ -380,41 +380,17 @@ header .subtitle {
     border-top: 1px solid #fde68a;
 }
 
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    padding: 8px 12px;
-    background: #f5f8fa;
-    border-radius: 6px;
-    transition: background 0.2s;
-}
-
-.content-header:hover {
-    background: #e8eef3;
-}
-
-.content-header h4 {
+.article-content h4 {
     color: #3d5a73;
     font-size: 0.9rem;
-    margin: 0;
-}
-
-.toggle-icon {
-    color: #6b8299;
-    font-size: 0.8rem;
-    transition: transform 0.2s;
+    margin-bottom: 10px;
 }
 
 .content-body {
-    margin-top: 12px;
     padding: 15px;
     background: #fafbfc;
     border-radius: 6px;
     border: 1px solid #e8eef3;
-    max-height: 400px;
-    overflow-y: auto;
 }
 
 .content-body p {
