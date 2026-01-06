@@ -1,0 +1,70 @@
+# =============================================
+# 每日新聞自動摘要系統 - Docker Compose
+# =============================================
+# 使用方式:
+#   1. 複製 .env.example 為 .env 並填入 SMTP 設定
+#   2. docker-compose up --build
+#   3. 開啟 http://localhost:5600
+# =============================================
+
+version: '3.8'
+
+services:
+  # ===== 後端服務 (FastAPI) =====
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dailynews-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Taipei
+      # SMTP 設定從 .env 檔案讀取
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      # Playwright 已內建於 Docker 映像檔
+      - ENABLE_PLAYWRIGHT=true
+      # 可選：AI API 設定
+      - AI_API_KEY=${AI_API_KEY:-}
+      - AI_API_URL=${AI_API_URL:-}
+    # 注意：不使用 volume mount，因為會覆蓋 Playwright 安裝
+    networks:
+      - dailynews-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # ===== 前端服務 (Nginx) =====
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dailynews-frontend
+    restart: unless-stopped
+    ports:
+      - "5600:80"
+    depends_on:
+      - backend
+    networks:
+      - dailynews-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  dailynews-network:
+    driver: bridge

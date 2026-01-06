@@ -1,0 +1,29 @@
+# FastAPI 與 ASGI 伺服器
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic[email]==2.5.3
+
+# 非同步 HTTP 請求
+aiohttp==3.9.1
+
+# RSS 解析
+feedparser==6.0.11
+
+# 日期時間處理
+python-dateutil==2.8.2
+pytz==2024.1
+
+# 文章正文抽取
+trafilatura==1.6.4
+
+# 環境變數管理
+python-dotenv==1.0.0
+
+# ===== 可選依賴 =====
+# 如果需要 Playwright 支援（動態網頁渲染），取消註解以下行：
+# playwright==1.41.0
+
+# 如果需要 AI 摘要功能，可能需要以下套件之一：
+# openai==1.10.0           # OpenAI API
+# google-generativeai==0.3.2  # Google Gemini API
+# huggingface_hub==0.20.2  # Hugging Face API
