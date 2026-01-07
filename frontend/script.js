@@ -57,7 +57,8 @@ newsForm.addEventListener('submit', async function(e) {
         keyword: document.getElementById('keyword').value.trim(),
         count: parseInt(document.getElementById('count').value),
         date_mode: document.querySelector('input[name="dateMode"]:checked').value,
-        email: document.getElementById('email').value.trim()
+        email: document.getElementById('email').value.trim(),
+        search_mode: document.querySelector('input[name="searchMode"]:checked').value
     };
 
     // 如果是自訂日期範圍
@@ -196,13 +197,16 @@ function displayResults(articles, formData, result) {
         'both': '中英文'
     };
 
+    const searchModeText = result.search_params?.search_mode === 'google' ? 'Google Search' : 'RSS';
+
     resultsSummary.innerHTML = `
         <p>
             <strong>搜尋條件：</strong>
             關鍵字「${escapeHtml(formData.keyword)}」|
             語言：${langText[formData.language]} |
             日期：${dateInfo} |
-            要求篇數：${formData.count}
+            要求篇數：${formData.count} |
+            模式：${searchModeText}
         </p>
         <p>
             <strong>實際結果：</strong>共找到 ${articles.length} 篇新聞
@@ -312,9 +316,130 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// 頁面載入時設定初始日期
-document.addEventListener('DOMContentLoaded', function() {
+// 頁面載入時設定初始日期並檢查 API 狀態
+document.addEventListener('DOMContentLoaded', async function() {
     const today = getTaipeiDate();
     document.getElementById('startDate').value = today;
     document.getElementById('endDate').value = today;
+
+    // 檢查 API 設定狀態
+    await checkApiStatus();
+});
+
+// 檢查 API 設定狀態
+async function checkApiStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/config`);
+        const config = await response.json();
+
+        const googleApiStatus = document.getElementById('googleApiStatus');
+        if (googleApiStatus) {
+            if (config.google_search_available) {
+                googleApiStatus.textContent = '✅ 已設定';
+                googleApiStatus.className = 'api-status configured';
+            } else {
+                googleApiStatus.textContent = '⚠️ 未設定';
+                googleApiStatus.className = 'api-status not-configured';
+            }
+        }
+    } catch (error) {
+        console.error('檢查 API 狀態失敗:', error);
+    }
+}
+
+// ===== 設定管理功能 =====
+
+// 開啟設定彈窗
+async function openSettings() {
+    document.getElementById('settingsModal').style.display = 'flex';
+
+    // 載入目前設定
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/settings`);
+        const settings = await response.json();
+
+        // 填入目前值（密碼欄位顯示遮蔽值，不實際填入）
+        document.getElementById('googleSearchEngineId').value = settings.GOOGLE_SEARCH_ENGINE_ID || '';
+        document.getElementById('smtpHost').value = settings.SMTP_HOST || '';
+        document.getElementById('smtpPort').value = settings.SMTP_PORT || '';
+        document.getElementById('smtpUser').value = settings.SMTP_USER || '';
+
+        // 密碼欄位：如果有值就顯示 placeholder
+        if (settings.GOOGLE_API_KEY) {
+            document.getElementById('googleApiKey').placeholder = '已設定 (輸入新值以覆蓋)';
+        }
+        if (settings.SMTP_PASS) {
+            document.getElementById('smtpPass').placeholder = '已設定 (輸入新值以覆蓋)';
+        }
+    } catch (error) {
+        console.error('載入設定失敗:', error);
+    }
+}
+
+// 關閉設定彈窗
+function closeSettings() {
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
+// 儲存設定
+async function saveSettings() {
+    const settings = {};
+
+    // Google API 設定
+    const googleApiKey = document.getElementById('googleApiKey').value.trim();
+    const googleSearchEngineId = document.getElementById('googleSearchEngineId').value.trim();
+
+    if (googleApiKey) {
+        settings.GOOGLE_API_KEY = googleApiKey;
+    }
+    if (googleSearchEngineId) {
+        settings.GOOGLE_SEARCH_ENGINE_ID = googleSearchEngineId;
+    }
+
+    // SMTP 設定
+    const smtpHost = document.getElementById('smtpHost').value.trim();
+    const smtpPort = document.getElementById('smtpPort').value.trim();
+    const smtpUser = document.getElementById('smtpUser').value.trim();
+    const smtpPass = document.getElementById('smtpPass').value.trim();
+
+    if (smtpHost) settings.SMTP_HOST = smtpHost;
+    if (smtpPort) settings.SMTP_PORT = smtpPort;
+    if (smtpUser) settings.SMTP_USER = smtpUser;
+    if (smtpPass) settings.SMTP_PASS = smtpPass;
+
+    if (Object.keys(settings).length === 0) {
+        alert('沒有要更新的設定');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/settings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(settings)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`設定已更新！\n${result.message}`);
+            closeSettings();
+            // 重新檢查 API 狀態
+            await checkApiStatus();
+        } else {
+            alert('設定更新失敗');
+        }
+    } catch (error) {
+        console.error('儲存設定失敗:', error);
+        alert('儲存設定失敗: ' + error.message);
+    }
+}
+
+// 點擊背景關閉彈窗
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        closeSettings();
+    }
 });

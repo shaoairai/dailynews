@@ -11,12 +11,29 @@
         <header>
             <h1>📰 每日新聞自動摘要系統</h1>
             <p class="subtitle">自動抓取、摘要、寄送新聞到您的信箱</p>
+            <button type="button" class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
         </header>
 
         <main>
             <!-- 搜尋表單 -->
             <section class="form-section">
                 <form id="newsForm">
+                    <!-- 搜尋模式 -->
+                    <div class="form-group">
+                        <label>搜尋模式</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="searchMode" value="rss" checked>
+                                <span>RSS 模式 (免費無限制)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="searchMode" value="google" id="googleSearchRadio">
+                                <span>Google Search (每日 100 次)</span>
+                                <span class="api-status" id="googleApiStatus"></span>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- 語言選擇 -->
                     <div class="form-group">
                         <label for="language">語言選擇</label>
@@ -107,6 +124,57 @@
         <footer>
             <p>© 2024 每日新聞摘要系統 | Powered by FastAPI</p>
         </footer>
+    </div>
+
+    <!-- 設定彈窗 -->
+    <div class="modal-overlay" id="settingsModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ 系統設定</h2>
+                <button type="button" class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="settings-note">設定會在頁面重新整理後生效，重啟容器後會重置。如需永久保存請更新 .env 檔案。</p>
+
+                <div class="settings-section">
+                    <h3>🔍 Google Custom Search API</h3>
+                    <p class="settings-desc">用於更精準的新聞搜尋（每日免費 100 次）</p>
+                    <div class="settings-group">
+                        <label for="googleApiKey">API Key</label>
+                        <input type="password" id="googleApiKey" placeholder="從 Google Cloud Console 取得">
+                    </div>
+                    <div class="settings-group">
+                        <label for="googleSearchEngineId">Search Engine ID</label>
+                        <input type="text" id="googleSearchEngineId" placeholder="從 Programmable Search Engine 取得">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>📧 SMTP 郵件設定</h3>
+                    <p class="settings-desc">用於發送新聞摘要郵件</p>
+                    <div class="settings-group">
+                        <label for="smtpHost">SMTP 主機</label>
+                        <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                    </div>
+                    <div class="settings-group">
+                        <label for="smtpPort">SMTP 連接埠</label>
+                        <input type="number" id="smtpPort" placeholder="587">
+                    </div>
+                    <div class="settings-group">
+                        <label for="smtpUser">帳號 (Email)</label>
+                        <input type="email" id="smtpUser" placeholder="your-email@gmail.com">
+                    </div>
+                    <div class="settings-group">
+                        <label for="smtpPass">密碼 / App Password</label>
+                        <input type="password" id="smtpPass" placeholder="Gmail 需使用應用程式密碼">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeSettings()">取消</button>
+                <button type="button" class="btn-primary" onclick="saveSettings()">儲存設定</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
